@@ -1,17 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tank | Mission Control</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/assets/index-Cvx9eLZY.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Ce5B6Pga.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tank — Mission Control</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#e4e4e7;font-family:system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.header{padding:16px 20px;border-bottom:1px solid #27272a;display:flex;align-items:center;justify-content:position:sticky;top:0;background:#0a0a0f;z-index:10}
+.header h1{font-size:18px;font-weight:700;color:#fff}
+.header .status{margin-left:8px;width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.nav{padding:12px 20px;border-bottom:1px solid #27272a;display:flex;gap:8px;overflow-x:auto}
+.nav button{padding:6px 14px;border-radius:6px;border:1px solid #27272a;background:transparent;color:#a1a1aa;font-size:13px;cursor:pointer;white-space:nowrap}
+.nav button.active{background:#27272a;color:#fff}
+.page{padding:16px 20px}
+.cards{display:flex;flex-direction:column;gap:10px}
+.card{background:#18181b;border:1px solid #27272a;border-radius:10px;padding:16px;cursor:pointer;transition:border-color .2s}
+.card:hover{border-color:#f97316}
+.card.running{border-left:3px solid #f97316}
+.card.done{border-left:3px solid #22c55e}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+.card-title{font-size:14px;font-weight:600;color:#fff}
+.card-status{font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500}
+.card-status.running{background:#f9731620;color:#f97316}
+.card-status.done{background:#22c55e20;color:#22c55e}
+.card-status.pending{background:#27272a;color:#a1a1aa}
+.card-project{font-size:12px;color:#71717a;margin-bottom:4px}
+.card-time{font-size:11px;color:#52525b}
+.card-prompt{font-size:12px;color:#a1a1aa;margin-top:8px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.empty{text-align:center;padding:60px 20px;color:#52525b}
+.empty .icon{font-size:40px;margin-bottom:12px}
+.terminal-wrap{position:fixed;inset:0;background:#0a0a0f;z-index:50;display:flex;flex-direction:column}
+.terminal-header{padding:12px 16px;border-bottom:1px solid #27272a;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.terminal-header h2{font-size:14px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.back-btn{padding:6px 12px;border-radius:6px;border:1px solid #27272a;background:transparent;color:#a1a1aa;font-size:13px;cursor:pointer;margin-right:12px}
+.terminal-output{flex:1;overflow-y:auto;padding:12px 16px;font-family:'JetBrains Mono',monaco,monospace;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:#d4d4d8}
+.terminal-input-wrap{padding:12px 16px;border-top:1px solid #27272a;display:flex;gap:8px;flex-shrink:0;align-items:center}
+.type-icon{color:#f97316;font-size:14px;font-weight:700;flex-shrink:0;padding-left:4px}
+.terminal-input{flex:1;background:#18181b;border:1px solid #27272a;border-radius:6px;padding:10px 12px;color:#fff;font-family:'JetBrains Mono',monaco,monospace;font-size:13px;outline:none}
+.terminal-input:focus{border-color:#f97316}
+.terminal-input::placeholder{color:#52525b}
+.send-btn{padding:10px 16px;border-radius:6px;border:none;background:#f97316;color:#fff;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0}
+.send-btn:hover{background:#ea580c}
+.new-task{padding:16px 20px;border-bottom:1px solid #27272a}
+.new-task h3{font-size:14px;font-weight:600;margin-bottom:10px}
+.new-task-row{display:flex;gap:8px}
+.new-task input,.new-task select{flex:1;background:#18181b;border:1px solid #27272a;border-radius:6px;padding:8px 12px;color:#fff;font-size:13px;outline:none}
+.new-task input:focus,.new-task select:focus{border-color:#f97316}
+.new-task textarea{width:100%;background:#18181b;border:1px solid #27272a;border-radius:6px;padding:10px 12px;color:#fff;font-size:13px;outline:none;resize:vertical;min-height:60px;font-family:inherit;margin-top:8px}
+.new-task textarea:focus{border-color:#f97316}
+.new-task button{padding:8px 16px;border-radius:6px;border:none;background:#f97316;color:#fff;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;align-self:flex-end;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🔥 Tank</h1>
+  <div class="status" id="connStatus"></div>
+</div>
+<div class="nav" id="projectNav"></div>
+<div id="newTaskForm"></div>
+<div class="page"><div class="cards" id="taskList"></div></div>
+<div class="terminal-wrap" id="terminalView" style="display:none">
+  <div class="terminal-header">
+    <button class="back-btn" onclick="closeTerminal()">← Back</button>
+    <h2 id="terminalTitle"></h2>
+  </div>
+  <div class="terminal-output" id="terminalOutput"></div>
+  <div class="terminal-input-wrap">
+    <div class="type-icon">❯</div>
+    <input class="terminal-input" id="terminalInput" placeholder="Type a message to Claude Code..." onkeydown="if(event.key==='Enter')sendToTerminal()">
+    <button class="send-btn" onclick="sendToTerminal()">Send</button>
+  </div>
+</div>
+<script>
+const API = '/api';
+let ws, currentTaskId = null, currentTmuxSession = null;
+let projects = [], tasks = [], activeProjectId = 'all';
+
+// ── WebSocket ──────────────────────────────────────────────
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${proto}//${location.host}/ws`);
+  ws.onopen = () => { document.getElementById('connStatus').style.background = '#22c55e'; };
+  ws.onclose = () => { document.getElementById('connStatus').style.background = '#ef4444'; setTimeout(connectWS, 3000); };
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'task_output' && msg.taskId === currentTaskId) {
+      const el = document.getElementById('terminalOutput');
+      el.textContent = msg.output;
+      el.scrollTop = el.scrollHeight;
+    }
+  };
+}
+
+// ── API helpers ────────────────────────────────────────────
+async function api(path, opts = {}) {
+  const r = await fetch(API + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  return r.json();
+}
+
+// ── Render ─────────────────────────────────────────────────
+function renderNav() {
+  const nav = document.getElementById('projectNav');
+  const allBtn = `<button class="${activeProjectId === 'all' ? 'active' : ''}" onclick="filterProject('all')">All (${tasks.length})</button>`;
+  const projBtns = projects.map(p => {
+    const count = tasks.filter(t => t.project_id === p.id).length;
+    return `<button class="${activeProjectId === p.id ? 'active' : ''}" onclick="filterProject('${p.id}')">${p.icon} ${p.name} (${count})</button>`;
+  }).join('');
+  nav.innerHTML = allBtn + projBtns;
+}
+
+function renderTasks() {
+  const list = document.getElementById('taskList');
+  const filtered = activeProjectId === 'all' ? tasks : tasks.filter(t => t.project_id === activeProjectId);
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="icon">🤖</div><div>No tasks yet. Create one below!</div></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(t => {
+    const proj = projects.find(p => p.id === t.project_id);
+    const time = t.completed_at ? `Done ${timeAgo(t.completed_at)}` : `Started ${timeAgo(t.created_at)}`;
+    return `<div class="card ${t.status}" onclick="openTerminal('${t.id}')">
+      <div class="card-header">
+        <div class="card-title">${esc(t.title)}</div>
+        <div class="card-status ${t.status}">${t.status}</div>
+      </div>
+      <div class="card-project">${proj ? proj.icon + ' ' + proj.name : '—'}</div>
+      <div class="card-prompt">${esc(t.prompt || '')}</div>
+      <div class="card-time">${time}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderNewTaskForm() {
+  const form = document.getElementById('newTaskForm');
+  if (projects.length === 0) {
+    form.innerHTML = `<div class="new-task"><h3>New Project</h3>
+      <div class="new-task-row"><input id="projName" placeholder="Project name"><input id="projRepo" placeholder="Repo path (optional)"><button onclick="createProject()">Create</button></div></div>`;
+    return;
+  }
+  form.innerHTML = `<div class="new-task">
+    <h3>New Task — Launch Claude Code Agent</h3>
+    <div class="new-task-row">
+      <select id="taskProject">${projects.map(p => `<option value="${p.id}">${p.icon} ${p.name}</option>`).join('')}</select>
+      <input id="taskTitle" placeholder="Task title (e.g. Fix footer links)">
+    </div>
+    <textarea id="taskPrompt" placeholder="What should Claude Code do? Be specific about files, style, etc."></textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <select id="taskModel" style="background:#18181b;border:1px solid #27272a;border-radius:6px;padding:8px 12px;color:#fff;font-size:13px">
+        <option value="sonnet">Claude Sonnet</option>
+        <option value="opus">Claude Opus</option>
+      </select>
+      <button onclick="createTask()">🚀 Launch Agent</button>
+    </div>
+  </div>`;
+}
+
+// ── Actions ────────────────────────────────────────────────
+async function createProject() {
+  const name = document.getElementById('projName').value.trim();
+  if (!name) return;
+  const repo = document.getElementById('projRepo').value.trim() || null;
+  await api('/projects', { method: 'POST', body: JSON.stringify({ name, repo_path: repo }) });
+  await loadData();
+}
+
+async function createTask() {
+  const project_id = document.getElementById('taskProject').value;
+  const title = document.getElementById('taskTitle').value.trim();
+  const prompt = document.getElementById('taskPrompt').value.trim();
+  const model = document.getElementById('taskModel').value;
+  if (!title || !prompt) return alert('Fill in title and prompt');
+  const proj = projects.find(p => p.id === project_id);
+  await api('/tasks', { method: 'POST', body: JSON.stringify({ project_id, title, prompt, model, repo_path: proj?.repo_path }) });
+  document.getElementById('taskTitle').value = '';
+  document.getElementById('taskPrompt').value = '';
+  await loadData();
+}
+
+async function loadData() {
+  projects = await api('/projects');
+  // Gather tasks from all projects
+  tasks = [];
+  for (const p of projects) {
+    const pt = await api(`/tasks/${p.id}`);
+    tasks.push(...pt);
+  }
+  tasks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  renderNav();
+  renderTasks();
+  renderNewTaskForm();
+}
+
+function filterProject(id) {
+  activeProjectId = id;
+  renderNav();
+  renderTasks();
+}
+
+// ── Terminal view ──────────────────────────────────────────
+async function openTerminal(taskId) {
+  currentTaskId = taskId;
+  const task = tasks.find(t => t.id === taskId);
+  currentTmuxSession = task?.tmux_session || null;
+  
+  document.getElementById('terminalTitle').textContent = `${task.title} — ${task.tmux_session || 'no session'}`;
+  document.getElementById('terminalOutput').textContent = 'Loading...';
+  document.getElementById('terminalView').style.display = 'flex';
+  document.getElementById('terminalInput').focus();
+  
+  if (ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ type: 'listen_task', taskId }));
+  }
+  
+  // Load initial output
+  const data = await api(`/tasks/${taskId}/output`);
+  document.getElementById('terminalOutput').textContent = data.output || '(no output yet)';
+}
+
+function closeTerminal() {
+  currentTaskId = null;
+  currentTmuxSession = null;
+  document.getElementById('terminalView').style.display = 'none';
+  document.getElementById('terminalInput').value = '';
+}
+
+function sendToTerminal() {
+  const el = document.getElementById('terminalInput');
+  const text = el.value.trim();
+  if (!text || !currentTaskId) return;
+  
+  if (ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ type: 'task_input', taskId: currentTaskId, text }));
+  }
+  
+  el.value = '';
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function timeAgo(s) { const d = Math.floor((Date.now() - new Date(s)) / 1000); if (d < 60) return `${d}s ago`; if (d < 3600) return `${Math.floor(d/60)}m ago`; return `${Math.floor(d/3600)}h ago`; }
+
+// ── Init ───────────────────────────────────────────────────
+connectWS();
+loadData();
+setInterval(loadData, 5000);
+</script>
+</body>
 </html>

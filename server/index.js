@@ -78,10 +78,15 @@ function createTmuxSession(taskId, workdir) {
   exec(`tmux new-session -d -s ${sessionName} -c ${workdir || ROOT} 2>&1`, (err) => {
     if (err) console.error(`tmux create error: ${err}`);
     
-    // Launch Claude Code interactively in that session
+    // Launch Claude Code
     exec(`tmux send-keys -t ${sessionName} "claude" Enter 2>&1`, (err2) => {
       if (err2) console.error(`tmux send-keys error: ${err2}`);
     });
+    
+    // Auto-accept folder trust prompt after 4 seconds
+    setTimeout(() => {
+      exec(`tmux send-keys -t ${sessionName} "1" Enter 2>&1`);
+    }, 4000);
   });
 
   return sessionName;
@@ -147,10 +152,10 @@ app.post('/api/tasks', async (req, res) => {
   // Update project timestamp
   db.prepare('UPDATE projects SET updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(project_id);
 
-  // Wait a moment then send the prompt
+  // Wait for Claude Code to load and accept trust, then send prompt
   setTimeout(() => {
     if (prompt) sendToSession(sessionName, prompt);
-  }, 2000);
+  }, 8000);
 
   res.json({ id, title, status: 'running', tmux_session: sessionName });
 });
