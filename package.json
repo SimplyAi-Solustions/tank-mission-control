@@ -1,0 +1,18 @@
+{
+  "name": "tank",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server/index.js",
+    "build": "cd client && pnpm install && pnpm build",
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "chokidar": "^4.0.0",
+    "express": "^4.21.0",
+    "uuid": "^10.0.0",
+    "ws": "^8.18.0"
+  }
+}
