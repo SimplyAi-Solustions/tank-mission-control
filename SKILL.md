@@ -70,6 +70,28 @@ cd /opt/tank
 pnpm install
 ```
 
+### Step 2.5: Pull the companion sources and install Graphify
+
+Tank should not be deployed on its own. Pull the two companion sources below before first use:
+
+- **API Mega List** for external services, APIs, and shortcuts worth considering
+- **Graphify** for internal repo mapping before you brief Claude Code through Tank
+
+```bash
+mkdir -p /opt/reference
+
+git clone https://github.com/cporter202/API-mega-list.git /opt/reference/API-mega-list \
+  || git -C /opt/reference/API-mega-list pull --ff-only
+
+git clone https://github.com/SimplyAi-Solustions/graphify.git /opt/reference/graphify \
+  || git -C /opt/reference/graphify pull --ff-only
+
+uv tool install graphifyy
+graphify --version
+graphify claude install
+graphify hermes install
+```
+
 ### Step 3: Build the client
 
 ```bash
@@ -136,6 +158,22 @@ curl http://127.0.0.1:7878/api/projects -b /tmp/tank-cookies
 ```
 
 ## Usage Patterns
+
+### Pattern 0: Pre-flight before you create the Tank task
+
+Do this before you start spawning Claude Code sessions:
+
+```bash
+# Review external building blocks
+cd /opt/reference/API-mega-list
+
+# Map the repo you are about to hand to Tank
+cd /path/to/target-repo
+graphify .
+graphify query "what are the core services, entry points, and risky areas?"
+```
+
+Use what you find to improve the Tank task prompt. API Mega List gives you outside options. Graphify gives you inside context.
 
 ### Pattern 1: Single task — set and forget
 
