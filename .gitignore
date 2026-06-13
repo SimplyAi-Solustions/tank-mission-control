@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Database (runtime data, not source)
+*.db
+*.db-shm
+*.db-wal
+
+# Environment
+.env
+
+# Build output (but keep client/dist/index.html - it's the hand-crafted UI)
+client/dist/assets/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
